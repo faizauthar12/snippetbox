@@ -18,14 +18,17 @@ type application struct {
 }
 
 func main() {
+    // Flag
     addr := flag.String("addr", ":4000", "HTTP network address")
     dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
 
     flag.Parse()
 
+    // Custom infoLog and errorLog
     infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime|log.LUTC)
     errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.LUTC|log.Lshortfile)
 
+    // Open DB connection
     db, err := openDB(*dsn)
     if err != nil {
         errorLog.Fatal(err)
@@ -35,18 +38,22 @@ func main() {
     // before the main() function exits.
     defer db.Close()
 
+    // Initialize a new instance of our application struct. containing the
+    // dependencies
     app := &application{
         errorLog: errorLog,
         infoLog: infoLog,
         snippets: &models.SnippetModel{DB: db},
     }
 
+    // Initialize http.Server struct
     srv := &http.Server{
         Addr: *addr,
         ErrorLog: errorLog,
         Handler: app.routes(),
     }
 
+    // Print infoLog and errorLog
     infoLog.Printf("Starting server on %s", *addr)
     err = srv.ListenAndServe()
     errorLog.Fatal(err)
