@@ -78,5 +78,48 @@ func (m *SnippetModel) Get(id int) (*Snippet, error) {
 
 // This wil lreturn the 10 most recently created snippets.
 func (m *SnippetModel) Latest() ([]*Snippet, error) {
-    return nil, nil
+    // SQL Statement
+    stmt := `SELECT id, title, content, created, expires FROM snippets
+    WHERE expires > UTC_TIMESTAMP() ORDER BY id DESC LIMIT 10`
+
+    // Useq Query method on the connection pool to execute our
+    // SQL Statement.
+    rows, err := m.DB.Query(stmt)
+    if err != nil {
+        return nil, err
+    }
+
+    // close SQL connection before this function being closed
+    defer rows.Close()
+
+    // Initialize an empty slice to hold the Snippet structs.
+    snippets := []*Snippet{}
+
+    // use rows.Next to iterate throught the rows in the resultset. This
+    // prepares the first (and then each subsequent) row to be acted on by the
+    // rows.Scan() method. If iteration over all the rows completes then the
+    // resultset automatically closes itself and frees up the underlying
+    // database connection
+    for rows.Next() {
+        // create a pointer to a new zeored Snippet struct
+        s := &Snippet{}
+
+        err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+        if err != nil {
+            return nil, err
+        }
+        // Append it to the slice of snippets.
+        snippets = append(snippets, s)
+    }
+    
+    // When the rows.Next() loops has finished we call rows.Err() to retrieve any
+    // error that was encountered during the iteratio. It's important to
+    // call this - don't assume that a successful iteration was completed
+    // over the whole resultset.
+    if err = rows.Err(); err != nil {
+        return nil, err
+    }
+
+    // if everything went OK then return the Snippets slice.
+    return snippets, nil
 }
