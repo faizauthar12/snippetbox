@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -15,41 +14,25 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
         app.notFound(w)
         return
     }
-
+    
     snippets, err := app.snippets.Latest()
     if err != nil {
         app.serverError(w, err)
         return
     }
-
-    files := []string{
-        "./ui/html/base.html",
-        "./ui/html/partials/nav.html",
-        "./ui/html/pages/home.html",
-    }
-
-    ts, err := template.ParseFiles(files...)
-    if err != nil{
-        app.serverError(w, err)
-    }
-
-    data := &templateData{
+    
+    app.render(w, http.StatusOK, "home.tmpl", &templateData{
         Snippets: snippets,
-    }
-
-    err = ts.ExecuteTemplate(w, "base", data)
-    if err != nil{
-        app.serverError(w, err)
-    }
+    })
 }
-
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
     id, err := strconv.Atoi(r.URL.Query().Get("id"))
+    
     if err != nil || id < 1 {
         app.notFound(w)
         return
     }
-
+    
     snippet, err := app.snippets.Get(id)
     if err != nil {
         if errors.Is(err, models.ErrNoRecord) {
@@ -59,28 +42,10 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
         }
         return
     }
-
-    files := []string{
-        "./ui/html/base.html",
-        "./ui/html/partials/nav.html",
-        "./ui/html/pages/view.html",
-    }
-
-    // Parsing the template
-    ts, err := template.ParseFiles(files...)
-    if err != nil {
-        app.serverError(w,err)
-        return
-    }
-
-    data := &templateData{
+    
+    app.render(w, http.StatusOK, "view.tmpl", &templateData{
         Snippet: snippet,
-    }
-
-    err = ts.ExecuteTemplate(w, "base", data)
-    if err != nil {
-        app.serverError(w,err)
-    }
+    })
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
