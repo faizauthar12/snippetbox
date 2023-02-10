@@ -1,0 +1,39 @@
+services:
+  app:
+    image: golang:1.20.0
+    command: sh -c "go mod download && go run ./cmd/web -addr=":4000" -dsn="web:pass@tcp/snippetbox?parseTime=true" "
+    ports:
+      - 4000:4000
+    working_dir: /app
+    volumes:
+      - ./:/app
+    depends_on: 
+      - mysql
+    networks:
+      - snippetbox-network
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: pass
+      MYSQL_DB: snippetbox
+
+  mysql:
+    image: mariadb:10.9.5
+    command: --init-file /data/application/init.sql
+    volumes:
+      - snippetbox-mysql-data:/var/lib/mysql
+      - ./init.sql:/data/application/init.sql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+      MYSQL_DATABASE: snippetbox
+    networks:
+      - snippetbox-network
+
+volumes:
+  snippetbox-mysql-data:
+
+networks:
+  snippetbox-network:
+    driver: bridge
