@@ -12,6 +12,6 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("/snippet/view", app.snippetView)
 	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
-    // Wrap servermux with custom midleware
-	return secureHeaders(mux)
+	// Wrap servermux with custom midleware
+	return app.logRequest(secureHeaders(mux))
 }
