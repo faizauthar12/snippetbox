@@ -24,7 +24,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-    params := httprouter.ParamsFromContext(r.Context())
+	params := httprouter.ParamsFromContext(r.Context())
 
 	id, err := strconv.Atoi(params.ByName("id"))
 
@@ -50,7 +50,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-    w.Write([]byte("Display the form for creating a new snippet...."))
+	w.Write([]byte("Display the form for creating a new snippet...."))
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
