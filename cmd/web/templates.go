@@ -12,14 +12,15 @@ type templateData struct {
 	CurrentYear int
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
+	Form        any
 }
 
 func humanDate(t time.Time) string {
-    return t.Format("02 Jan 2006 at 15.04")
+	return t.Format("02 Jan 2006 at 15.04")
 }
 
 var functions = template.FuncMap{
-    "humanDate": humanDate,
+	"humanDate": humanDate,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
@@ -35,7 +36,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 
 		name := filepath.Base(page)
 
-        ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
+		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
 		if err != nil {
 			return nil, err
 		}
