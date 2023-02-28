@@ -25,6 +25,12 @@ type userSignupForm struct {
 	validator.Validator `form:"-"`
 }
 
+type userLoginForm struct {
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
 	if err != nil {
@@ -134,19 +140,19 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    err = app.users.Insert(form.Name, form.Email, form.Password)
-    if err != nil {
-        if errors.Is(err, models.ErrDuplicateEmail) {
-            form.AddFieldError("email", "Email address is already in use")
+	err = app.users.Insert(form.Name, form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			form.AddFieldError("email", "Email address is already in use")
 
-            data := app.newTemplateData(r)
-            data.Form = form
-            app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
-        } else {
-            app.serverError(w, err)
-        }
-        return
-    }
+			data := app.newTemplateData(r)
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
 
 	app.sessionManager.Put(r.Context(), "flash", "Your signup was successful. Please log in.")
 
@@ -154,7 +160,9 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display a HTML form for logging in a user....")
+	data := app.newTemplateData(r)
+	data.Form = userLoginForm{}
+	app.render(w, http.StatusOK, "login.tmpl", data)
 }
 
 func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
